@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/baseball-dashboard/static/css/main.e6c13ad2.css",
+    "main.js": "/baseball-dashboard/static/js/main.b8f26f1f.js",
+    "static/js/453.e1537f54.chunk.js": "/baseball-dashboard/static/js/453.e1537f54.chunk.js",
+    "index.html": "/baseball-dashboard/index.html",
+    "main.e6c13ad2.css.map": "/baseball-dashboard/static/css/main.e6c13ad2.css.map",
+    "main.b8f26f1f.js.map": "/baseball-dashboard/static/js/main.b8f26f1f.js.map",
+    "453.e1537f54.chunk.js.map": "/baseball-dashboard/static/js/453.e1537f54.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.b8f26f1f.js"
+  ]
+}
