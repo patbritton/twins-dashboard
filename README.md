@@ -1,70 +1,83 @@
-# Getting Started with Create React App
+# Minnesota Twins Analytics Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Interactive dashboard analyzing 15 years of Minnesota Twins performance data (2010-2025).
 
-## Available Scripts
+**🔗 [View Live Dashboard](https://patbritton.github.io/twins-dashboard/)**
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## About the Data
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Data Source
+All statistics sourced from [Baseball-Reference.com](https://www.baseball-reference.com/teams/MIN/), the official database for MLB historical statistics.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Time Period
+**2010-2025** (15 seasons)
 
-### `npm test`
+**Note:** 2020 season is excluded due to the COVID-19 shortened season (60 games instead of the standard 162 games).
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Dataset
 
-### `npm run build`
+| Field | Description |
+|-------|-------------|
+| **Year** | Season year (2010-2025, excluding 2020) |
+| **Wins** | Total regular season wins |
+| **Losses** | Total regular season losses |
+| **Win Percentage** | Wins ÷ (Wins + Losses) |
+| **Playoffs** | Whether the team made the playoffs (Yes/No) |
+| **Total Attendance** | Total season attendance at Target Field |
+| **Avg Attendance** | Average attendance per game (Total ÷ 81 home games) |
+| **Home Runs** | Total team home runs for the season |
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Key Findings
+- Strong positive correlation between win percentage and attendance
+- Best season: 2019 (101 wins, 62.3% win rate, 307 home runs)
+- Playoff appearances: 5 out of 15 seasons (33.3% rate)
+- Attendance decline: 15.8% drop from 2010 peak to 2025
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Features
 
-### `npm run eject`
+- Interactive year range and playoff filters
+- 5 chart types: line, area, bar, and scatter plot visualizations
+- Dark/light mode toggle
+- CSV data export
+- Responsive design for mobile and desktop
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Built With
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- React 18
+- Recharts (data visualization)
+- Lucide React (icons)
+- Deployed on GitHub Pages
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
+## Local Development
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+# Install dependencies
+npm install
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+# Run locally
+npm start
 
-### Code Splitting
+# Build for production
+npm run build
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+## Author
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+**Patrick Britton**
+- GitHub: [@patbritton](https://github.com/patbritton)
 
-### Making a Progressive Web App
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## License
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+MIT License - feel free to use this project as a reference or starting point for your own dashboards.
