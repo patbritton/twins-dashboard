@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, ScatterChart, Scatter } from 'recharts';
-import { Download } from 'lucide-react';
-import { TrendingUp, TrendingDown, Users, Trophy, Home, Filter, Calendar, Award, TrendingDown as Decline } from 'lucide-react';
+import { Download, ExternalLink, TrendingUp, TrendingDown, Users, Trophy, Home, Filter, Award } from 'lucide-react';
+import './TwinsDashboard.css'; // Make sure the path matches where you saved the CSS file
 
 const TwinsDashboard = () => {
   const [darkMode, setDarkMode] = useState(true);
@@ -38,7 +38,6 @@ const TwinsDashboard = () => {
   const previousYear = allData[allData.length - 2];
   const playoffYears = data.filter(d => d.Playoffs === 'Yes').length;
   const avgWinPct = data.length > 0 ? (data.reduce((sum, d) => sum + d.Win_Percentage, 0) / data.length * 100).toFixed(1) : 0;
-  const totalHR = data.reduce((sum, d) => sum + d.HR, 0);
   const avgAttendance = data.length > 0 ? Math.round(data.reduce((sum, d) => sum + (d.Avg_Attendance || 0), 0) / data.filter(d => d.Avg_Attendance).length) : 0;
 
   const winPctChange = ((latestYear.Win_Percentage - previousYear.Win_Percentage) * 100).toFixed(1);
@@ -74,42 +73,24 @@ const TwinsDashboard = () => {
     document.body.removeChild(link);
   };
 
-  const twinsColors = {
-    navy: '#002B5C',
-    lightNavy: '#1e4d7b',
+  // Keep specific hex colors for Recharts as it requires JS values, 
+  // but we map them to variables in CSS for consistency.
+  const chartColors = {
+    primary: darkMode ? '#5B92E5' : '#002B5C',
     red: '#BA0C2F',
-    gold: '#D4AF6A'
-  };
-
-  const theme = {
-    bg: darkMode ? '#0a1628' : '#FAFBFC',
-    cardBg: darkMode ? '#14223d' : '#FFFFFF',
-    text: darkMode ? '#F0F4F8' : '#1a2332',
-    textMuted: darkMode ? '#94A3B8' : '#5a6b7d',
+    gold: '#D4AF6A',
+    light: darkMode ? '#7BA5E8' : '#1e4d7b',
     border: darkMode ? '#1e3a5f' : '#DFE4EA',
-    primary: darkMode ? '#5B92E5' : twinsColors.navy,
-    accent: twinsColors.red,
-    highlight: twinsColors.gold,
-    success: '#4CAF50',
-    chartBlue: darkMode ? '#5B92E5' : twinsColors.navy,
-    chartRed: twinsColors.red,
-    chartGold: twinsColors.gold,
-    chartLight: darkMode ? '#7BA5E8' : twinsColors.lightNavy
+    textMuted: darkMode ? '#94A3B8' : '#5a6b7d'
   };
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div style={{
-          backgroundColor: darkMode ? '#1a2d4d' : '#FFFFFF',
-          padding: '14px 16px',
-          border: `2px solid ${theme.primary}`,
-          borderRadius: '10px',
-          boxShadow: darkMode ? '0 8px 16px rgba(0, 0, 0, 0.4)' : '0 4px 12px rgba(0, 43, 92, 0.15)'
-        }}>
-          <p style={{ color: theme.text, fontWeight: 'bold', marginBottom: '8px', fontSize: '15px' }}>{label}</p>
+        <div className="custom-tooltip">
+          <p className="tooltip-label">{label}</p>
           {payload.map((entry, index) => (
-            <p key={index} style={{ color: entry.color, margin: '4px 0', fontSize: '14px', fontWeight: '500' }}>
+            <p key={index} className="tooltip-item" style={{ color: entry.color }}>
               {entry.name}: {typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
             </p>
           ))}
@@ -120,41 +101,23 @@ const TwinsDashboard = () => {
   };
 
   const MetricCard = ({ title, value, change, icon: Icon, trend, subtitle }) => (
-    <div style={{
-      backgroundColor: theme.cardBg,
-      padding: '24px',
-      borderRadius: '12px',
-      border: `1px solid ${theme.border}`,
-      transition: 'all 0.3s ease',
-      cursor: 'pointer',
-      boxShadow: darkMode ? '0 2px 8px rgba(0, 0, 0, 0.2)' : '0 2px 8px rgba(0, 43, 92, 0.08)'
-    }}
-    onMouseOver={e => {
-      e.currentTarget.style.transform = 'translateY(-4px)';
-      e.currentTarget.style.boxShadow = darkMode ? '0 8px 20px rgba(91, 146, 229, 0.3)' : '0 4px 16px rgba(0, 43, 92, 0.15)';
-      e.currentTarget.style.borderColor = theme.primary;
-    }}
-    onMouseOut={e => {
-      e.currentTarget.style.transform = 'translateY(0)';
-      e.currentTarget.style.boxShadow = darkMode ? '0 2px 8px rgba(0, 0, 0, 0.2)' : '0 2px 8px rgba(0, 43, 92, 0.08)';
-      e.currentTarget.style.borderColor = theme.border;
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
-        <div style={{ color: theme.textMuted, fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{title}</div>
-        <Icon size={20} color={theme.primary} />
+    <div className="metric-card">
+      <div className="metric-header">
+        <div className="metric-title">{title}</div>
+        <Icon size={20} className="text-primary-color" style={{ color: 'var(--primary-color)' }} />
       </div>
-      <div style={{ fontSize: '32px', fontWeight: 'bold', color: theme.text, marginBottom: '4px' }}>
+      <div className="metric-value">
         {value}
       </div>
       {subtitle && (
-        <div style={{ color: theme.textMuted, fontSize: '12px', marginBottom: '8px' }}>
+        <div className="metric-subtitle">
           {subtitle}
         </div>
       )}
       {change && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {trend === 'up' ? <TrendingUp size={16} color={theme.success} /> : <TrendingDown size={16} color={theme.accent} />}
-          <span style={{ color: trend === 'up' ? theme.success : theme.accent, fontSize: '14px', fontWeight: '600' }}>
+        <div className="metric-trend">
+          {trend === 'up' ? <TrendingUp size={16} className="trend-up" /> : <TrendingDown size={16} className="trend-down" />}
+          <span className={`trend-text ${trend === 'up' ? 'trend-up' : 'trend-down'}`}>
             {Math.abs(change)}% vs 2024
           </span>
         </div>
@@ -163,107 +126,45 @@ const TwinsDashboard = () => {
   );
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: theme.bg,
-      padding: '32px 24px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      transition: 'background-color 0.3s ease'
-    }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+    <div className={`twins-dashboard ${darkMode ? 'dark' : 'light'}`}>
+      <div className="dashboard-container">
         {/* Header */}
-        <div style={{ marginBottom: '28px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px', flexWrap: 'wrap', gap: '16px' }}>
+        <div className="header-section">
+          <div className="header-content">
             <div>
-              <h1 style={{ 
-                color: theme.primary, 
-                fontSize: '38px', 
-                fontWeight: '700', 
-                margin: '0 0 8px 0',
-                letterSpacing: '-0.5px'
-              }}>
+              <h1 className="main-title">
                 Minnesota Twins Analytics Dashboard
               </h1>
-              <p style={{ color: theme.textMuted, fontSize: '15px', margin: '0 0 8px 0', fontWeight: '500' }}>
+              <p className="sub-title">
                 Interactive Performance Analysis • 2010-2025 • 15 Seasons
               </p>
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '8px' }}>
-                <span style={{ 
-                  backgroundColor: darkMode ? 'rgba(91, 146, 229, 0.15)' : 'rgba(0, 43, 92, 0.08)', 
-                  color: theme.primary, 
-                  padding: '4px 12px', 
-                  borderRadius: '20px', 
-                  fontSize: '12px',
-                  fontWeight: '600'
-                }}>React</span>
-                <span style={{ 
-                  backgroundColor: darkMode ? 'rgba(91, 146, 229, 0.15)' : 'rgba(0, 43, 92, 0.08)', 
-                  color: theme.primary, 
-                  padding: '4px 12px', 
-                  borderRadius: '20px', 
-                  fontSize: '12px',
-                  fontWeight: '600'
-                }}>Recharts</span>
-                <span style={{ 
-                  backgroundColor: darkMode ? 'rgba(91, 146, 229, 0.15)' : 'rgba(0, 43, 92, 0.08)', 
-                  color: theme.primary, 
-                  padding: '4px 12px', 
-                  borderRadius: '20px', 
-                  fontSize: '12px',
-                  fontWeight: '600'
-                }}>Data Visualization</span>
+              <div className="tag-container">
+                <span className="tech-tag">React</span>
+                <span className="tech-tag">Recharts</span>
+                <span className="tech-tag">Data Visualization</span>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                onClick={exportToCSV}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: theme.primary,
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
-                onMouseOver={e => {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.opacity = '0.9';
-                }}
-                onMouseOut={e => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.opacity = '1';
-                }}
-              >
+            <div className="button-group">
+              <button onClick={exportToCSV} className="btn btn-primary">
                 <Download size={16} />
                 Export Data
               </button>
               <button
+                onClick={() =>
+                  window.open(
+                    'https://mnscu-my.sharepoint.com/:x:/r/personal/xq9341ij_go_minnstate_edu/Documents/FALL%2025/BDAT%201040/FINAL%20PROJECT/Master.xlsx?d=wef32017161794704821c6c3cf43375a6&csf=1&web=1&e=3EgeKu',
+                    '_blank'
+                  )
+                }
+                className="btn btn-primary"
+              >
+                <ExternalLink size={16} />
+                View Original Excel
+              </button>
+
+              <button
                 onClick={() => setDarkMode(!darkMode)}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: theme.cardBg,
-                  color: theme.text,
-                  border: `1px solid ${theme.border}`,
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={e => {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.borderColor = theme.primary;
-                }}
-                onMouseOut={e => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.borderColor = theme.border;
-                }}
+                className="btn btn-secondary"
               >
                 {darkMode ? '☀️ Light' : '🌙 Dark'} Mode
               </button>
@@ -272,55 +173,28 @@ const TwinsDashboard = () => {
         </div>
 
         {/* Interactive Filters */}
-        <div style={{
-          backgroundColor: theme.cardBg,
-          padding: '20px 24px',
-          borderRadius: '12px',
-          border: `1px solid ${theme.border}`,
-          marginBottom: '28px',
-          display: 'flex',
-          gap: '24px',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          boxShadow: darkMode ? '0 2px 8px rgba(0, 0, 0, 0.2)' : '0 2px 8px rgba(0, 43, 92, 0.08)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Filter size={18} color={theme.primary} />
-            <span style={{ color: theme.text, fontWeight: '600', fontSize: '14px' }}>Filters:</span>
+        <div className="filter-card">
+          <div className="filter-group">
+            <Filter size={18} style={{ color: 'var(--primary-color)' }} />
+            <span className="filter-label">Filters:</span>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <label style={{ color: theme.textMuted, fontSize: '13px', fontWeight: '600' }}>Year Range:</label>
+          <div className="filter-group" style={{ gap: '12px' }}>
+            <label className="filter-sub-label">Year Range:</label>
             <select 
               value={yearRange[0]}
               onChange={(e) => setYearRange([parseInt(e.target.value), yearRange[1]])}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '6px',
-                border: `1px solid ${theme.border}`,
-                backgroundColor: theme.bg,
-                color: theme.text,
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
+              className="filter-select"
             >
               {[2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2021, 2022, 2023].map(year => (
                 <option key={year} value={year}>{year}</option>
               ))}
             </select>
-            <span style={{ color: theme.textMuted }}>to</span>
+            <span className="text-muted" style={{ color: 'var(--text-secondary)' }}>to</span>
             <select 
               value={yearRange[1]}
               onChange={(e) => setYearRange([yearRange[0], parseInt(e.target.value)])}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '6px',
-                border: `1px solid ${theme.border}`,
-                backgroundColor: theme.bg,
-                color: theme.text,
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
+              className="filter-select"
             >
               {[2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2021, 2022, 2023, 2024, 2025].map(year => (
                 <option key={year} value={year}>{year}</option>
@@ -328,45 +202,31 @@ const TwinsDashboard = () => {
             </select>
           </div>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <label className="checkbox-label">
             <input 
               type="checkbox" 
               checked={showPlayoffsOnly}
               onChange={(e) => setShowPlayoffsOnly(e.target.checked)}
-              style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+              className="checkbox-input"
             />
-            <span style={{ color: theme.text, fontSize: '13px', fontWeight: '600' }}>Playoff Seasons Only</span>
+            <span className="filter-label">Playoff Seasons Only</span>
           </label>
 
-          <div style={{ marginLeft: 'auto', color: theme.textMuted, fontSize: '13px', fontWeight: '600' }}>
+          <div className="filter-count">
             Showing {data.length} season{data.length !== 1 ? 's' : ''}
           </div>
         </div>
 
         {/* Data Note */}
-        <div style={{
-          backgroundColor: darkMode ? 'rgba(91, 146, 229, 0.1)' : 'rgba(0, 43, 92, 0.04)',
-          border: `1px solid ${darkMode ? 'rgba(91, 146, 229, 0.3)' : 'rgba(0, 43, 92, 0.12)'}`,
-          borderRadius: '10px',
-          padding: '14px 18px',
-          marginBottom: '28px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
+        <div className="info-box">
           <span style={{ fontSize: '20px' }}>ℹ️</span>
-          <p style={{ color: theme.text, fontSize: '14px', margin: 0, lineHeight: '1.5' }}>
-            <strong>Data Source:</strong> Official Minnesota Twins franchise records • 2020 season excluded (shortened 60-game COVID season)
+          <p className="info-text">
+            <strong>Data Source:</strong> <a href="https://www.baseball-reference.com/teams/MIN/">Baseball-Reference.com</a> • 2020 season excluded (shortened 60-game COVID season)
           </p>
         </div>
 
         {/* Key Metrics */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '20px',
-          marginBottom: '32px'
-        }}>
+        <div className="metrics-grid">
           <MetricCard
             title="2025 Win Percentage"
             value={`${(latestYear.Win_Percentage * 100).toFixed(1)}%`}
@@ -410,34 +270,28 @@ const TwinsDashboard = () => {
         </div>
 
         {/* Charts Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: '24px', marginBottom: '24px' }}>
+        <div className="charts-grid">
           {/* Win-Loss Record */}
-          <div style={{
-            backgroundColor: theme.cardBg,
-            padding: '24px',
-            borderRadius: '12px',
-            border: `1px solid ${theme.border}`,
-            boxShadow: darkMode ? '0 2px 8px rgba(0, 0, 0, 0.2)' : '0 2px 8px rgba(0, 43, 92, 0.08)'
-          }}>
-            <h3 style={{ color: theme.text, fontSize: '17px', fontWeight: '600', marginBottom: '12px', letterSpacing: '-0.3px' }}>
+          <div className="chart-card">
+            <h3 className="chart-title">
               Win-Loss Record Over Time
             </h3>
-            <p style={{ color: theme.textMuted, fontSize: '13px', marginBottom: '16px', lineHeight: '1.5' }}>
-              <strong style={{ color: theme.text }}>Performance fluctuates significantly.</strong> Successful seasons like 2019 and 2023 show high win totals, while struggling years show clear declines. The team's competitiveness varies considerably across this 15-year span.
+            <p className="chart-subtitle">
+              <strong>Performance fluctuates significantly.</strong> Successful seasons like 2019 and 2023 show high win totals, while struggling years show clear declines. The team's competitiveness varies considerably across this 15-year span.
             </p>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke={theme.border} opacity={0.5} />
-                <XAxis dataKey="Year" stroke={theme.textMuted} style={{ fontSize: '13px' }} />
-                <YAxis stroke={theme.textMuted} style={{ fontSize: '13px' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
+                <XAxis dataKey="Year" stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
+                <YAxis stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend wrapperStyle={{ fontSize: '14px', paddingTop: '10px' }} />
                 <Line 
                   type="monotone" 
                   dataKey="Wins" 
-                  stroke={theme.chartBlue} 
+                  stroke={chartColors.primary} 
                   strokeWidth={3} 
-                  dot={{ r: 4, fill: theme.chartBlue, strokeWidth: 0 }} 
+                  dot={{ r: 4, fill: chartColors.primary, strokeWidth: 0 }} 
                   activeDot={{ r: 6 }} 
                   animationDuration={1000}
                   animationBegin={0}
@@ -445,9 +299,9 @@ const TwinsDashboard = () => {
                 <Line 
                   type="monotone" 
                   dataKey="Losses" 
-                  stroke={theme.chartRed} 
+                  stroke={chartColors.red} 
                   strokeWidth={3} 
-                  dot={{ r: 4, fill: theme.chartRed, strokeWidth: 0 }} 
+                  dot={{ r: 4, fill: chartColors.red, strokeWidth: 0 }} 
                   activeDot={{ r: 6 }} 
                   animationDuration={1000}
                   animationBegin={0}
@@ -457,35 +311,29 @@ const TwinsDashboard = () => {
           </div>
 
           {/* Win Percentage Trend */}
-          <div style={{
-            backgroundColor: theme.cardBg,
-            padding: '24px',
-            borderRadius: '12px',
-            border: `1px solid ${theme.border}`,
-            boxShadow: darkMode ? '0 2px 8px rgba(0, 0, 0, 0.2)' : '0 2px 8px rgba(0, 43, 92, 0.08)'
-          }}>
-            <h3 style={{ color: theme.text, fontSize: '17px', fontWeight: '600', marginBottom: '12px', letterSpacing: '-0.3px' }}>
+          <div className="chart-card">
+            <h3 className="chart-title">
               Win Percentage Trend
             </h3>
-            <p style={{ color: theme.textMuted, fontSize: '13px', marginBottom: '16px', lineHeight: '1.5' }}>
-              <strong style={{ color: theme.text }}>Winning percentage shows cyclical patterns.</strong> Peak performance in 2019 (62.3%) and strong 2023 season (53.7%) contrast sharply with struggles in 2016 (36.4%) and recent 2025 decline (43.2%).
+            <p className="chart-subtitle">
+              <strong>Winning percentage shows cyclical patterns.</strong> Peak performance in 2019 (62.3%) and strong 2023 season (53.7%) contrast sharply with struggles in 2016 (36.4%) and recent 2025 decline (43.2%).
             </p>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={data}>
                 <defs>
                   <linearGradient id="colorWinPct" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={theme.chartBlue} stopOpacity={0.6}/>
-                    <stop offset="95%" stopColor={theme.chartBlue} stopOpacity={0.05}/>
+                    <stop offset="5%" stopColor={chartColors.primary} stopOpacity={0.6}/>
+                    <stop offset="95%" stopColor={chartColors.primary} stopOpacity={0.05}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={theme.border} opacity={0.5} />
-                <XAxis dataKey="Year" stroke={theme.textMuted} style={{ fontSize: '13px' }} />
-                <YAxis stroke={theme.textMuted} tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} style={{ fontSize: '13px' }} domain={[0.3, 0.7]} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
+                <XAxis dataKey="Year" stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
+                <YAxis stroke={chartColors.textMuted} tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} style={{ fontSize: '13px' }} domain={[0.3, 0.7]} />
                 <Tooltip content={<CustomTooltip />} />
                 <Area 
                   type="monotone" 
                   dataKey="Win_Percentage" 
-                  stroke={theme.chartBlue} 
+                  stroke={chartColors.primary} 
                   strokeWidth={3} 
                   fillOpacity={1} 
                   fill="url(#colorWinPct)" 
@@ -497,28 +345,22 @@ const TwinsDashboard = () => {
           </div>
 
           {/* Attendance Analysis */}
-          <div style={{
-            backgroundColor: theme.cardBg,
-            padding: '24px',
-            borderRadius: '12px',
-            border: `1px solid ${theme.border}`,
-            boxShadow: darkMode ? '0 2px 8px rgba(0, 0, 0, 0.2)' : '0 2px 8px rgba(0, 43, 92, 0.08)'
-          }}>
-            <h3 style={{ color: theme.text, fontSize: '17px', fontWeight: '600', marginBottom: '12px', letterSpacing: '-0.3px' }}>
+          <div className="chart-card">
+            <h3 className="chart-title">
               Average Attendance per Game
             </h3>
-            <p style={{ color: theme.textMuted, fontSize: '13px', marginBottom: '16px', lineHeight: '1.5' }}>
-              <strong style={{ color: theme.text }}>Attendance correlates with team success.</strong> Fan turnout peaks during strong seasons (2010: 39.8K, 2019: 28.4K) and drops during losing years. The 2021 dip reflects post-COVID recovery period.
+            <p className="chart-subtitle">
+              <strong>Attendance correlates with team success.</strong> Fan turnout peaks during strong seasons (2010: 39.8K, 2019: 28.4K) and drops during losing years. The 2021 dip reflects post-COVID recovery period.
             </p>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.filter(d => d.Avg_Attendance)}>
-                <CartesianGrid strokeDasharray="3 3" stroke={theme.border} opacity={0.5} />
-                <XAxis dataKey="Year" stroke={theme.textMuted} style={{ fontSize: '13px' }} />
-                <YAxis stroke={theme.textMuted} style={{ fontSize: '13px' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
+                <XAxis dataKey="Year" stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
+                <YAxis stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar 
                   dataKey="Avg_Attendance" 
-                  fill={theme.chartGold} 
+                  fill={chartColors.gold} 
                   radius={[6, 6, 0, 0]} 
                   animationDuration={1000}
                   animationBegin={100}
@@ -528,64 +370,51 @@ const TwinsDashboard = () => {
           </div>
 
           {/* Home Runs */}
-          <div style={{
-            backgroundColor: theme.cardBg,
-            padding: '24px',
-            borderRadius: '12px',
-            border: `1px solid ${theme.border}`,
-            boxShadow: darkMode ? '0 2px 8px rgba(0, 0, 0, 0.2)' : '0 2px 8px rgba(0, 43, 92, 0.08)'
-          }}>
-            <h3 style={{ color: theme.text, fontSize: '17px', fontWeight: '600', marginBottom: '12px', letterSpacing: '-0.3px' }}>
+          <div className="chart-card">
+            <h3 className="chart-title">
               Home Run Production by Season
             </h3>
-            <p style={{ color: theme.textMuted, fontSize: '13px', marginBottom: '16px', lineHeight: '1.5' }}>
-              <strong style={{ color: theme.text }}>Power hitting shows mixed correlation with success.</strong> Record 2019 season (307 HR) led to playoffs, but 2016's high output (200 HR) didn't translate to wins. Offensive production alone doesn't guarantee playoff berths.
+            <p className="chart-subtitle">
+              <strong>Power hitting shows mixed correlation with success.</strong> Record 2019 season (307 HR) led to playoffs, but 2016's high output (200 HR) didn't translate to wins. Offensive production alone doesn't guarantee playoff berths.
             </p>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke={theme.border} opacity={0.5} />
-                <XAxis dataKey="Year" stroke={theme.textMuted} style={{ fontSize: '13px' }} />
-                <YAxis stroke={theme.textMuted} style={{ fontSize: '13px' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
+                <XAxis dataKey="Year" stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
+                <YAxis stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="HR" radius={[6, 6, 0, 0]} animationDuration={1000} animationBegin={200}>
                   {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.Playoffs === 'Yes' ? theme.chartBlue : theme.chartLight} />
+                    <Cell key={`cell-${index}`} fill={entry.Playoffs === 'Yes' ? chartColors.primary : chartColors.light} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <p style={{ color: theme.textMuted, fontSize: '12px', marginTop: '12px', textAlign: 'center', fontWeight: '500' }}>
-              <span style={{ color: theme.chartBlue, fontWeight: 'bold' }}>■</span> Playoff Years | 
-              <span style={{ color: theme.chartLight, fontWeight: 'bold' }}> ■</span> Non-Playoff Years
+            <p style={{ color: chartColors.textMuted, fontSize: '12px', marginTop: '12px', textAlign: 'center', fontWeight: '500' }}>
+              <span style={{ color: chartColors.primary, fontWeight: 'bold' }}>■</span> Playoff Years | 
+              <span style={{ color: chartColors.light, fontWeight: 'bold' }}> ■</span> Non-Playoff Years
             </p>
           </div>
         </div>
 
         {/* Correlation Analysis - Full Width */}
-        <div style={{
-          backgroundColor: theme.cardBg,
-          padding: '24px',
-          borderRadius: '12px',
-          border: `1px solid ${theme.border}`,
-          boxShadow: darkMode ? '0 2px 8px rgba(0, 0, 0, 0.2)' : '0 2px 8px rgba(0, 43, 92, 0.08)',
-          marginBottom: '24px'
-        }}>
-          <h3 style={{ color: theme.text, fontSize: '17px', fontWeight: '600', marginBottom: '12px', letterSpacing: '-0.3px' }}>
+        <div className="chart-card full-width-card">
+          <h3 className="chart-title">
             Correlation Analysis: Win Percentage vs Average Attendance
           </h3>
-          <p style={{ color: theme.textMuted, fontSize: '13px', marginBottom: '16px', lineHeight: '1.5' }}>
-            <strong style={{ color: theme.text }}>Strong positive correlation between performance and attendance.</strong> This scatter plot reveals that higher win percentages consistently attract larger crowds. Playoff seasons (shown in darker blue) cluster in the upper right, demonstrating that winning drives fan engagement at Target Field.
+          <p className="chart-subtitle">
+            <strong>Strong positive correlation between performance and attendance.</strong> This scatter plot reveals that higher win percentages consistently attract larger crowds. Playoff seasons (shown in darker blue) cluster in the upper right, demonstrating that winning drives fan engagement at Target Field.
           </p>
           <ResponsiveContainer width="100%" height={400}>
             <ScatterChart margin={{ top: 20, right: 20, bottom: 60, left: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={theme.border} opacity={0.5} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
               <XAxis 
                 type="number" 
                 dataKey="Win_Percentage" 
                 name="Win Percentage" 
-                stroke={theme.textMuted}
+                stroke={chartColors.textMuted}
                 tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
-                label={{ value: 'Win Percentage', position: 'bottom', offset: 40, fill: theme.text, fontSize: 14, fontWeight: 600 }}
+                label={{ value: 'Win Percentage', position: 'bottom', offset: 40, fill: chartColors.textMuted, fontSize: 14, fontWeight: 600 }}
                 domain={[0.3, 0.7]}
                 style={{ fontSize: '13px' }}
               />
@@ -593,9 +422,9 @@ const TwinsDashboard = () => {
                 type="number" 
                 dataKey="Avg_Attendance" 
                 name="Avg Attendance" 
-                stroke={theme.textMuted}
+                stroke={chartColors.textMuted}
                 tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
-                label={{ value: 'Average Attendance per Game', angle: -90, position: 'left', offset: 40, fill: theme.text, fontSize: 14, fontWeight: 600 }}
+                label={{ value: 'Average Attendance per Game', angle: -90, position: 'left', offset: 40, fill: chartColors.textMuted, fontSize: 14, fontWeight: 600 }}
                 style={{ fontSize: '13px' }}
               />
               <Tooltip 
@@ -604,23 +433,17 @@ const TwinsDashboard = () => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     return (
-                      <div style={{
-                        backgroundColor: darkMode ? '#1a2d4d' : '#FFFFFF',
-                        padding: '14px 16px',
-                        border: `2px solid ${theme.primary}`,
-                        borderRadius: '10px',
-                        boxShadow: darkMode ? '0 8px 16px rgba(0, 0, 0, 0.4)' : '0 4px 12px rgba(0, 43, 92, 0.15)'
-                      }}>
-                        <p style={{ color: theme.text, fontWeight: 'bold', marginBottom: '8px', fontSize: '15px' }}>
+                      <div className="custom-tooltip">
+                        <p className="tooltip-label">
                           {data.Year} {data.Playoffs === 'Yes' ? '🏆' : ''}
                         </p>
-                        <p style={{ color: theme.chartBlue, margin: '4px 0', fontSize: '14px', fontWeight: '500' }}>
+                        <p style={{ color: chartColors.primary, margin: '4px 0', fontSize: '14px', fontWeight: '500' }}>
                           Win %: {(data.Win_Percentage * 100).toFixed(1)}%
                         </p>
-                        <p style={{ color: theme.chartGold, margin: '4px 0', fontSize: '14px', fontWeight: '500' }}>
+                        <p style={{ color: chartColors.gold, margin: '4px 0', fontSize: '14px', fontWeight: '500' }}>
                           Attendance: {data.Avg_Attendance?.toLocaleString()}
                         </p>
-                        <p style={{ color: theme.textMuted, margin: '4px 0', fontSize: '12px' }}>
+                        <p style={{ color: chartColors.textMuted, margin: '4px 0', fontSize: '12px' }}>
                           {data.Wins}-{data.Losses} record
                         </p>
                       </div>
@@ -632,87 +455,65 @@ const TwinsDashboard = () => {
               <Scatter 
                 name="Seasons" 
                 data={data.filter(d => d.Avg_Attendance)} 
-                fill={theme.chartBlue}
+                fill={chartColors.primary}
                 animationDuration={1500}
                 animationBegin={0}
               >
                 {data.filter(d => d.Avg_Attendance).map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={entry.Playoffs === 'Yes' ? theme.chartBlue : theme.chartLight}
+                    fill={entry.Playoffs === 'Yes' ? chartColors.primary : chartColors.light}
                     opacity={entry.Playoffs === 'Yes' ? 1 : 0.6}
                   />
                 ))}
               </Scatter>
             </ScatterChart>
           </ResponsiveContainer>
-          <div style={{ 
-            marginTop: '16px', 
-            padding: '12px', 
-            backgroundColor: darkMode ? 'rgba(91, 146, 229, 0.1)' : 'rgba(0, 43, 92, 0.04)',
-            borderRadius: '8px',
-            display: 'flex',
-            gap: '24px',
-            justifyContent: 'center',
-            flexWrap: 'wrap'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: theme.chartBlue }}></div>
-              <span style={{ color: theme.text, fontSize: '13px', fontWeight: '500' }}>Playoff Seasons</span>
+          <div className="legend-container">
+            <div className="legend-item">
+              <div className="legend-dot" style={{ backgroundColor: chartColors.primary }}></div>
+              <span className="legend-text">Playoff Seasons</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: theme.chartLight, opacity: 0.6 }}></div>
-              <span style={{ color: theme.text, fontSize: '13px', fontWeight: '500' }}>Non-Playoff Seasons</span>
+            <div className="legend-item">
+              <div className="legend-dot" style={{ backgroundColor: chartColors.light, opacity: 0.6 }}></div>
+              <span className="legend-text">Non-Playoff Seasons</span>
             </div>
           </div>
         </div>
 
         {/* Key Insights Section */}
-        <div style={{
-          backgroundColor: theme.cardBg,
-          padding: '28px',
-          borderRadius: '12px',
-          border: `1px solid ${theme.border}`,
-          boxShadow: darkMode ? '0 2px 8px rgba(0, 0, 0, 0.2)' : '0 2px 8px rgba(0, 43, 92, 0.08)',
-          marginBottom: '24px'
-        }}>
-          <h3 style={{ color: theme.text, fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Award size={20} color={theme.primary} />
+        <div className="chart-card full-width-card">
+          <h3 className="insights-header">
+            <Award size={20} style={{ color: 'var(--primary-color)' }} />
             Key Insights
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+          <div className="insights-grid">
             <div>
-              <div style={{ color: theme.primary, fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>2019</div>
-              <div style={{ color: theme.text, fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>Best Season</div>
-              <div style={{ color: theme.textMuted, fontSize: '13px' }}>101 wins, 62.3% win rate, 307 home runs</div>
+              <div className="insight-value" style={{ color: 'var(--primary-color)' }}>2019</div>
+              <div className="insight-label">Best Season</div>
+              <div className="insight-desc">101 wins, 62.3% win rate, 307 home runs</div>
             </div>
             <div>
-              <div style={{ color: theme.accent, fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>2016</div>
-              <div style={{ color: theme.text, fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>Challenging Season</div>
-              <div style={{ color: theme.textMuted, fontSize: '13px' }}>59 wins, 36.4% win rate, missed playoffs</div>
+              <div className="insight-value" style={{ color: 'var(--accent-color)' }}>2016</div>
+              <div className="insight-label">Challenging Season</div>
+              <div className="insight-desc">59 wins, 36.4% win rate, missed playoffs</div>
             </div>
             <div>
-              <div style={{ color: theme.highlight, fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>33.3%</div>
-              <div style={{ color: theme.text, fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>Playoff Rate</div>
-              <div style={{ color: theme.textMuted, fontSize: '13px' }}>5 playoff appearances in 15 seasons</div>
+              <div className="insight-value" style={{ color: 'var(--highlight-color)' }}>33.3%</div>
+              <div className="insight-label">Playoff Rate</div>
+              <div className="insight-desc">5 playoff appearances in 15 seasons</div>
             </div>
             <div>
-              <div style={{ color: theme.primary, fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>Strong</div>
-              <div style={{ color: theme.text, fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>Win-Attendance Correlation</div>
-              <div style={{ color: theme.textMuted, fontSize: '13px' }}>Higher win % directly drives increased fan turnout</div>
+              <div className="insight-value" style={{ color: 'var(--primary-color)' }}>Strong</div>
+              <div className="insight-label">Win-Attendance Correlation</div>
+              <div className="insight-desc">Higher win % directly drives increased fan turnout</div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div style={{
-          padding: '20px',
-          textAlign: 'center',
-          color: theme.textMuted,
-          fontSize: '13px',
-          borderTop: `1px solid ${theme.border}`
-        }}>
-          <p style={{ margin: '0 0 8px 0', fontWeight: '600' }}>Built with React & Recharts • Data Visualization Portfolio Project</p>
+        <div className="dashboard-footer">
+          <p style={{ margin: '0 0 8px 0', fontWeight: '600' }}>Built with React & Recharts • Patrick Britton - Anoka Tech - Data Visualization Final Project.</p>
           <p style={{ margin: 0 }}>Demonstrates: Data transformation, interactive filtering, responsive design, and modern UI/UX principles</p>
         </div>
       </div>
