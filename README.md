@@ -1,10 +1,6 @@
 # Minnesota Twins Analytics Dashboard
 
-<<<<<<< HEAD
-Interactive dashboard analyzing 15 years of Minnesota Twins performance data (2010-2025) from https://www.baseball-reference.com/teams/MIN/.
-=======
 Interactive dashboard analyzing 15 years of Minnesota Twins performance data (2010-2025).
->>>>>>> 2e7d08b70d23f017dcab41c208e00455fec061a0
 
 **🔗 [View Live Dashboard](https://patbritton.github.io/twins-dashboard/)**
 
@@ -84,8 +80,4 @@ npm run build
 
 ## License
 
-<<<<<<< HEAD
 MIT License - feel free to use this project as a reference or starting point for your own dashboards.
-=======
-MIT License - feel free to use this project as a reference or starting point for your own dashboards.
->>>>>>> 2e7d08b70d23f017dcab41c208e00455fec061a0
