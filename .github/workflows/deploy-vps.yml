@@ -1,0 +1,30 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main  # Or 'master', depending on your default branch name
+
+jobs:
+  deploy-vps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # Navigate to the folder we created on the VPS
+            cd /var/www/twins.mp.ls
+            
+            # Pull the latest code from GitHub
+            git pull origin main
+            
+            # Install new dependencies (if any)
+            npm install
+            
+            # Build the production files
+            npm run build
