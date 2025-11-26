@@ -12,18 +12,15 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  Cell,
   ScatterChart,
   Scatter
 } from 'recharts';
 import {
   Download,
-  ExternalLink,
   TrendingUp,
   TrendingDown,
   Users,
   Trophy,
-  Home,
   Filter,
   Award,
   DollarSign
@@ -32,11 +29,18 @@ import './TwinsDashboard.css';
 
 const TwinsDashboard = () => {
   const [darkMode, setDarkMode] = useState(true);
-  // Updated default range to cover the full new dataset
   const [yearRange, setYearRange] = useState([1901, 2025]);
   const [showPlayoffsOnly, setShowPlayoffsOnly] = useState(false);
 
-  // COMPLETE DATASET (1901-2015 from CSV + 2016-2025 from App.js + Payrolls)
+  // --- NEW: STATE FOR SANDBOX MODE ---
+  const [sandboxConfig, setSandboxConfig] = useState({
+    chartType: 'line',   // 'line', 'bar', 'area', 'scatter'
+    xAxis: 'Year',       // What goes on bottom?
+    yAxis: 'Wins',       // What goes on side?
+    color: '#002B5C'     // Twins Navy
+  });
+
+  // COMPLETE DATASET
   const allData = [
     { Year: 1901, Wins: 61, Losses: 72, Attendance: 162007, Avg_Attendance: 2418, Payroll: null, Playoffs: 'No', HR: 0 },
     { Year: 1902, Wins: 61, Losses: 75, Attendance: 188158, Avg_Attendance: 2727, Payroll: null, Playoffs: 'No', HR: 0 },
@@ -164,7 +168,7 @@ const TwinsDashboard = () => {
     { Year: 2025, Wins: 70, Losses: 92, Attendance: 1768728, Avg_Attendance: 21836, Payroll: 142490390, Playoffs: 'No', HR: 191 }
   ];
 
-  // Compute dynamic stats based on the full dataset
+  // --- COMPUTE DYNAMIC STATS ---
   const data = useMemo(() => {
     return allData.filter(d => {
       const inRange = d.Year >= yearRange[0] && d.Year <= yearRange[1];
@@ -173,18 +177,18 @@ const TwinsDashboard = () => {
     });
   }, [yearRange, showPlayoffsOnly]);
 
-  // Helper for safe access
   const latestYear = data.length > 0 ? data[data.length - 1] : {};
   const previousYear = data.length > 1 ? data[data.length - 2] : {};
   const playoffYears = data.filter(d => d.Playoffs === 'Yes').length;
+  
   const avgWinPct = data.length > 0 
     ? (data.reduce((sum, d) => sum + (d.Wins / (d.Wins + d.Losses)), 0) / data.length * 100).toFixed(1) 
     : 0;
+  
   const avgAttendance = data.length > 0 
     ? Math.round(data.reduce((sum, d) => sum + (d.Avg_Attendance || 0), 0) / data.length) 
     : 0;
 
-  // Calculate Win % Change (handle edge cases where data might be missing)
   const winPctChange = (latestYear.Wins && previousYear.Wins) 
     ? (((latestYear.Wins/(latestYear.Wins+latestYear.Losses)) - (previousYear.Wins/(previousYear.Wins+previousYear.Losses))) * 100).toFixed(1) 
     : 0;
@@ -193,7 +197,7 @@ const TwinsDashboard = () => {
     ? ((latestYear.Avg_Attendance - previousYear.Avg_Attendance) / previousYear.Avg_Attendance * 100).toFixed(1)
     : 0;
 
-  // CSV Export Function
+  // --- CSV EXPORT ---
   const exportToCSV = () => {
     const headers = ['Year', 'Wins', 'Losses', 'Win_Percentage', 'Playoffs', 'Total_Attendance', 'Avg_Attendance', 'Payroll', 'Home_Runs'];
     const csvData = data.map(row => [
@@ -231,7 +235,7 @@ const TwinsDashboard = () => {
     light: darkMode ? '#7BA5E8' : '#1e4d7b',
     border: darkMode ? '#1e3a5f' : '#DFE4EA',
     textMuted: darkMode ? '#94A3B8' : '#5a6b7d',
-    payroll: '#22c55e' // Green for money
+    payroll: '#22c55e'
   };
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -260,14 +264,8 @@ const TwinsDashboard = () => {
         <div className="metric-title">{title}</div>
         <Icon size={20} className="text-primary-color" style={{ color: 'var(--primary-color)' }} />
       </div>
-      <div className="metric-value">
-        {value}
-      </div>
-      {subtitle && (
-        <div className="metric-subtitle">
-          {subtitle}
-        </div>
-      )}
+      <div className="metric-value">{value}</div>
+      {subtitle && <div className="metric-subtitle">{subtitle}</div>}
       {change && (
         <div className="metric-trend">
           {trend === 'up' ? <TrendingUp size={16} className="trend-up" /> : <TrendingDown size={16} className="trend-down" />}
@@ -279,19 +277,69 @@ const TwinsDashboard = () => {
     </div>
   );
 
+  // --- NEW: SANDBOX HELPERS ---
+  const metrics = [
+    { label: 'Year', key: 'Year' },
+    { label: 'Wins', key: 'Wins' },
+    { label: 'Losses', key: 'Losses' },
+    { label: 'Payroll', key: 'Payroll' },
+    { label: 'Attendance', key: 'Avg_Attendance' },
+    { label: 'Home Runs', key: 'HR' }
+  ];
+
+  const renderSandboxChart = () => {
+    const ChartComponent = {
+      line: LineChart,
+      bar: BarChart,
+      area: AreaChart,
+      scatter: ScatterChart
+    }[sandboxConfig.chartType];
+
+    const DataComponent = {
+      line: Line,
+      bar: Bar,
+      area: Area,
+      scatter: Scatter
+    }[sandboxConfig.chartType];
+
+    return (
+      <ResponsiveContainer width="100%" height={400}>
+        <ChartComponent data={data}>
+          <CartesianGrid strokeDasharray="3 3" opacity={0.5} />
+          <XAxis 
+            dataKey={sandboxConfig.xAxis} 
+            type="number" 
+            domain={['auto', 'auto']} 
+            tickFormatter={(val) => val > 1000000 ? `${val/1000000}M` : val}
+          />
+          <YAxis 
+            dataKey={sandboxConfig.yAxis} 
+            tickFormatter={(val) => val > 1000000 ? `$${val/1000000}M` : val}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend />
+          <DataComponent 
+            type="monotone" 
+            dataKey={sandboxConfig.yAxis} 
+            fill={sandboxConfig.color} 
+            stroke={sandboxConfig.color} 
+            name={metrics.find(m => m.key === sandboxConfig.yAxis)?.label}
+          />
+        </ChartComponent>
+      </ResponsiveContainer>
+    );
+  };
+
   return (
     <div className={`twins-dashboard ${darkMode ? 'dark' : 'light'}`}>
       <div className="dashboard-container">
+        
         {/* Header */}
         <div className="header-section">
           <div className="header-content">
             <div>
-              <h1 className="main-title">
-                Minnesota Twins Analytics Dashboard
-              </h1>
-              <p className="sub-title">
-                Interactive Performance Analysis • 1901-2025 • 120+ Seasons
-              </p>
+              <h1 className="main-title">Minnesota Twins Analytics Dashboard</h1>
+              <p className="sub-title">Interactive Performance Analysis • 1901-2025 • 120+ Seasons</p>
               <div className="tag-container">
                 <span className="tech-tag">React</span>
                 <span className="tech-tag">Recharts</span>
@@ -300,26 +348,21 @@ const TwinsDashboard = () => {
             </div>
             <div className="button-group">
               <button onClick={exportToCSV} className="btn btn-primary">
-                <Download size={16} />
-                Export Data
+                <Download size={16} /> Export Data
               </button>
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="btn btn-secondary"
-              >
+              <button onClick={() => setDarkMode(!darkMode)} className="btn btn-secondary">
                 {darkMode ? '☀️ Light' : '🌙 Dark'} Mode
               </button>
             </div>
           </div>
         </div>
 
-        {/* Interactive Filters */}
+        {/* Filters */}
         <div className="filter-card">
           <div className="filter-group">
             <Filter size={18} style={{ color: 'var(--primary-color)' }} />
             <span className="filter-label">Filters:</span>
           </div>
-          
           <div className="filter-group" style={{ gap: '12px' }}>
             <label className="filter-sub-label">Year Range:</label>
             <select 
@@ -342,7 +385,6 @@ const TwinsDashboard = () => {
               ))}
             </select>
           </div>
-
           <label className="checkbox-label">
             <input 
               type="checkbox" 
@@ -352,13 +394,12 @@ const TwinsDashboard = () => {
             />
             <span className="filter-label">Playoff Seasons Only</span>
           </label>
-
           <div className="filter-count">
             Showing {data.length} season{data.length !== 1 ? 's' : ''}
           </div>
         </div>
 
-        {/* Key Metrics */}
+        {/* Metrics Grid */}
         <div className="metrics-grid">
           <MetricCard
             title="2025 Win Percentage"
@@ -402,15 +443,63 @@ const TwinsDashboard = () => {
           />
         </div>
 
-        {/* Charts Grid */}
-        <div className="charts-grid">
-          {/* Payroll Trend - NEW CHART */}
+        {/* --- NEW: SANDBOX SECTION --- */}
+        <div className="chart-card full-width-card" style={{ marginTop: '32px', border: '2px dashed var(--primary-color)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+            <div>
+              <h3 className="chart-title">⚾ Sandbox Mode</h3>
+              <p className="chart-subtitle">Explore the data yourself. Compare any two metrics.</p>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              {/* Chart Type Selector */}
+              <select 
+                className="filter-select"
+                value={sandboxConfig.chartType}
+                onChange={(e) => setSandboxConfig({...sandboxConfig, chartType: e.target.value})}
+              >
+                <option value="line">Line Chart</option>
+                <option value="bar">Bar Chart</option>
+                <option value="area">Area Chart</option>
+                <option value="scatter">Scatter Plot</option>
+              </select>
+
+              {/* X-Axis Selector */}
+              <select 
+                className="filter-select"
+                value={sandboxConfig.xAxis}
+                onChange={(e) => setSandboxConfig({...sandboxConfig, xAxis: e.target.value})}
+              >
+                <option disabled>X-Axis (Bottom)</option>
+                {metrics.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
+              </select>
+
+              {/* Y-Axis Selector */}
+              <select 
+                className="filter-select"
+                value={sandboxConfig.yAxis}
+                onChange={(e) => setSandboxConfig({...sandboxConfig, yAxis: e.target.value})}
+              >
+                <option disabled>Y-Axis (Side)</option>
+                {metrics.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
+              </select>
+            </div>
+          </div>
+          <div style={{ backgroundColor: darkMode ? '#0f172a' : '#f8fafc', padding: '20px', borderRadius: '8px' }}>
+            {renderSandboxChart()}
+          </div>
+          <p style={{ textAlign: 'center', marginTop: '10px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+            Try comparing <strong>Payroll</strong> vs <strong>Wins</strong> to see money's impact!
+          </p>
+        </div>
+
+        {/* Standard Charts Grid */}
+        <div className="charts-grid" style={{ marginTop: '32px' }}>
+          
+          {/* Payroll Trend */}
           <div className="chart-card full-width-card">
-            <h3 className="chart-title">
-              Franchise Payroll History
-            </h3>
+            <h3 className="chart-title">Franchise Payroll History</h3>
             <p className="chart-subtitle">
-              <strong>Spending has skyrocketed since the 1980s.</strong> The graph highlights the dramatic increase in player salaries in the modern era compared to the rest of the 20th century.
+              <strong>Spending has skyrocketed since the 1980s.</strong> The graph highlights the dramatic increase in player salaries in the modern era.
             </p>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={data.filter(d => d.Payroll !== null)}>
@@ -422,29 +511,16 @@ const TwinsDashboard = () => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
                 <XAxis dataKey="Year" stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
-                <YAxis 
-                  stroke={chartColors.textMuted} 
-                  style={{ fontSize: '13px' }} 
-                  tickFormatter={(value) => `$${value / 1000000}M`}
-                />
+                <YAxis stroke={chartColors.textMuted} style={{ fontSize: '13px' }} tickFormatter={(value) => `$${value / 1000000}M`} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area 
-                  type="monotone" 
-                  dataKey="Payroll" 
-                  stroke={chartColors.payroll} 
-                  strokeWidth={3} 
-                  fillOpacity={1} 
-                  fill="url(#colorPayroll)" 
-                />
+                <Area type="monotone" dataKey="Payroll" stroke={chartColors.payroll} strokeWidth={3} fillOpacity={1} fill="url(#colorPayroll)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
 
           {/* Win-Loss Record */}
           <div className="chart-card">
-            <h3 className="chart-title">
-              Win-Loss Record Over Time
-            </h3>
+            <h3 className="chart-title">Win-Loss Record Over Time</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
@@ -452,40 +528,22 @@ const TwinsDashboard = () => {
                 <YAxis stroke={chartColors.textMuted} style={{ fontSize: '13px' }} domain={[0, 110]}/>
                 <Tooltip content={<CustomTooltip />} />
                 <Legend wrapperStyle={{ fontSize: '14px', paddingTop: '10px' }} />
-                <Line 
-                  type="monotone" 
-                  dataKey="Wins" 
-                  stroke={chartColors.primary} 
-                  strokeWidth={2} 
-                  dot={false}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="Losses" 
-                  stroke={chartColors.red} 
-                  strokeWidth={2} 
-                  dot={false}
-                />
+                <Line type="monotone" dataKey="Wins" stroke={chartColors.primary} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="Losses" stroke={chartColors.red} strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
           {/* Attendance Analysis */}
           <div className="chart-card">
-            <h3 className="chart-title">
-              Average Attendance per Game
-            </h3>
+            <h3 className="chart-title">Average Attendance per Game</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.filter(d => d.Avg_Attendance)}>
                 <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
                 <XAxis dataKey="Year" stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
                 <YAxis stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar 
-                  dataKey="Avg_Attendance" 
-                  fill={chartColors.gold} 
-                  radius={[4, 4, 0, 0]} 
-                />
+                <Bar dataKey="Avg_Attendance" fill={chartColors.gold} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
