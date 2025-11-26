@@ -1,60 +1,211 @@
-import React, { useState } from 'react';
-import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, ScatterChart, Scatter } from 'recharts';
-import { Download, ExternalLink, TrendingUp, TrendingDown, Users, Trophy, Home, Filter, Award } from 'lucide-react';
-import './TwinsDashboard.css'; // Make sure the path matches where you saved the CSS file
+import React, { useState, useMemo } from 'react';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Cell,
+  ScatterChart,
+  Scatter
+} from 'recharts';
+import {
+  Download,
+  ExternalLink,
+  TrendingUp,
+  TrendingDown,
+  Users,
+  Trophy,
+  Home,
+  Filter,
+  Award,
+  DollarSign
+} from 'lucide-react';
+import './TwinsDashboard.css';
 
 const TwinsDashboard = () => {
   const [darkMode, setDarkMode] = useState(true);
-  const [yearRange, setYearRange] = useState([2010, 2025]);
+  // Updated default range to cover the full new dataset
+  const [yearRange, setYearRange] = useState([1901, 2025]);
   const [showPlayoffsOnly, setShowPlayoffsOnly] = useState(false);
 
+  // COMPLETE DATASET (1901-2015 from CSV + 2016-2025 from App.js + Payrolls)
   const allData = [
-    { Year: 2010, Wins: 94, Losses: 68, Win_Percentage: 0.58, Playoffs: 'Yes', Total_Attendance: 3223640, Avg_Attendance: 39798, HR: 142 },
-    { Year: 2011, Wins: 63, Losses: 99, Win_Percentage: 0.389, Playoffs: 'No', Total_Attendance: 3168116, Avg_Attendance: 39113, HR: 103 },
-    { Year: 2012, Wins: 66, Losses: 96, Win_Percentage: 0.407, Playoffs: 'No', Total_Attendance: 2776354, Avg_Attendance: 34276, HR: 131 },
-    { Year: 2013, Wins: 66, Losses: 96, Win_Percentage: 0.407, Playoffs: 'No', Total_Attendance: 2477644, Avg_Attendance: 30588, HR: 151 },
-    { Year: 2014, Wins: 70, Losses: 92, Win_Percentage: 0.432, Playoffs: 'No', Total_Attendance: 2250606, Avg_Attendance: 27785, HR: 128 },
-    { Year: 2015, Wins: 83, Losses: 79, Win_Percentage: 0.512, Playoffs: 'No', Total_Attendance: 2220054, Avg_Attendance: 27408, HR: 156 },
-    { Year: 2016, Wins: 59, Losses: 103, Win_Percentage: 0.364, Playoffs: 'No', Total_Attendance: 1963912, Avg_Attendance: 24246, HR: 200 },
-    { Year: 2017, Wins: 85, Losses: 77, Win_Percentage: 0.525, Playoffs: 'Yes', Total_Attendance: 2051279, Avg_Attendance: 25324, HR: 206 },
-    { Year: 2018, Wins: 78, Losses: 84, Win_Percentage: 0.481, Playoffs: 'No', Total_Attendance: 1959197, Avg_Attendance: 24188, HR: 166 },
-    { Year: 2019, Wins: 101, Losses: 61, Win_Percentage: 0.623, Playoffs: 'Yes', Total_Attendance: 2303299, Avg_Attendance: 28436, HR: 307 },
-    { Year: 2021, Wins: 73, Losses: 89, Win_Percentage: 0.451, Playoffs: 'No', Total_Attendance: 1310199, Avg_Attendance: 16175, HR: 228 },
-    { Year: 2022, Wins: 78, Losses: 84, Win_Percentage: 0.481, Playoffs: 'No', Total_Attendance: 1801128, Avg_Attendance: 22236, HR: 178 },
-    { Year: 2023, Wins: 87, Losses: 75, Win_Percentage: 0.537, Playoffs: 'Yes', Total_Attendance: 1974124, Avg_Attendance: 24372, HR: 233 },
-    { Year: 2024, Wins: 82, Losses: 80, Win_Percentage: 0.506, Playoffs: 'No', Total_Attendance: 1951616, Avg_Attendance: 24094, HR: 183 },
-    { Year: 2025, Wins: 70, Losses: 92, Win_Percentage: 0.432, Playoffs: 'No', Total_Attendance: 1768728, Avg_Attendance: 21836, HR: 191 }
+    { Year: 1901, Wins: 61, Losses: 72, Attendance: 162007, Avg_Attendance: 2418, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1902, Wins: 61, Losses: 75, Attendance: 188158, Avg_Attendance: 2727, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1903, Wins: 43, Losses: 94, Attendance: 224523, Avg_Attendance: 3207, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1904, Wins: 38, Losses: 113, Attendance: 131744, Avg_Attendance: 1733, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1905, Wins: 64, Losses: 87, Attendance: 252027, Avg_Attendance: 3273, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1906, Wins: 55, Losses: 95, Attendance: 129903, Avg_Attendance: 1755, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1907, Wins: 49, Losses: 102, Attendance: 221534, Avg_Attendance: 3035, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1908, Wins: 67, Losses: 85, Attendance: 264027, Avg_Attendance: 3474, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1909, Wins: 42, Losses: 110, Attendance: 205456, Avg_Attendance: 2634, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1910, Wins: 66, Losses: 85, Attendance: 254267, Avg_Attendance: 3260, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1911, Wins: 64, Losses: 90, Attendance: 244884, Avg_Attendance: 3180, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1912, Wins: 91, Losses: 61, Attendance: 350663, Avg_Attendance: 4554, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1913, Wins: 90, Losses: 64, Attendance: 317529, Avg_Attendance: 4178, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1914, Wins: 81, Losses: 73, Attendance: 243354, Avg_Attendance: 3042, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1915, Wins: 85, Losses: 68, Attendance: 159977, Avg_Attendance: 2078, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1916, Wins: 76, Losses: 77, Attendance: 173740, Avg_Attendance: 2227, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1917, Wins: 74, Losses: 79, Attendance: 89670, Avg_Attendance: 1165, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1918, Wins: 72, Losses: 56, Attendance: 182618, Avg_Attendance: 2572, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1919, Wins: 56, Losses: 84, Attendance: 236654, Avg_Attendance: 3333, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1920, Wins: 68, Losses: 84, Attendance: 359260, Avg_Attendance: 4606, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1921, Wins: 80, Losses: 73, Attendance: 456058, Avg_Attendance: 5847, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1922, Wins: 69, Losses: 85, Attendance: 458552, Avg_Attendance: 5955, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1923, Wins: 75, Losses: 78, Attendance: 357406, Avg_Attendance: 4582, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1924, Wins: 92, Losses: 62, Attendance: 584310, Avg_Attendance: 7588, Payroll: null, Playoffs: 'Yes', HR: 0 },
+    { Year: 1925, Wins: 96, Losses: 55, Attendance: 817199, Avg_Attendance: 10613, Payroll: null, Playoffs: 'Yes', HR: 0 },
+    { Year: 1926, Wins: 81, Losses: 69, Attendance: 557863, Avg_Attendance: 7438, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1927, Wins: 85, Losses: 69, Attendance: 535408, Avg_Attendance: 6610, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1928, Wins: 75, Losses: 79, Attendance: 378501, Avg_Attendance: 4853, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1929, Wins: 71, Losses: 81, Attendance: 355506, Avg_Attendance: 4558, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1930, Wins: 94, Losses: 60, Attendance: 614474, Avg_Attendance: 7878, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1931, Wins: 92, Losses: 62, Attendance: 608397, Avg_Attendance: 7701, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1932, Wins: 93, Losses: 61, Attendance: 379064, Avg_Attendance: 4860, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1933, Wins: 99, Losses: 53, Attendance: 437533, Avg_Attendance: 5538, Payroll: null, Playoffs: 'Yes', HR: 0 },
+    { Year: 1934, Wins: 66, Losses: 86, Attendance: 330074, Avg_Attendance: 4126, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1935, Wins: 67, Losses: 86, Attendance: 253372, Avg_Attendance: 3248, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1936, Wins: 82, Losses: 71, Attendance: 349241, Avg_Attendance: 4477, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1937, Wins: 73, Losses: 80, Attendance: 294076, Avg_Attendance: 3676, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1938, Wins: 75, Losses: 76, Attendance: 523893, Avg_Attendance: 6804, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1939, Wins: 65, Losses: 87, Attendance: 307253, Avg_Attendance: 3939, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1940, Wins: 64, Losses: 90, Attendance: 282897, Avg_Attendance: 3674, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1941, Wins: 70, Losses: 84, Attendance: 420000, Avg_Attendance: 5250, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1942, Wins: 62, Losses: 89, Attendance: 255000, Avg_Attendance: 3446, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1943, Wins: 84, Losses: 69, Attendance: 574694, Avg_Attendance: 7464, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1944, Wins: 64, Losses: 90, Attendance: 525235, Avg_Attendance: 6821, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1945, Wins: 87, Losses: 67, Attendance: 652660, Avg_Attendance: 8367, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1946, Wins: 76, Losses: 78, Attendance: 1027216, Avg_Attendance: 13169, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1947, Wins: 64, Losses: 90, Attendance: 850758, Avg_Attendance: 11049, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1948, Wins: 56, Losses: 97, Attendance: 795254, Avg_Attendance: 10464, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1949, Wins: 50, Losses: 104, Attendance: 770745, Avg_Attendance: 10010, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1950, Wins: 67, Losses: 87, Attendance: 699650, Avg_Attendance: 9086, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1951, Wins: 62, Losses: 92, Attendance: 695167, Avg_Attendance: 9028, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1952, Wins: 78, Losses: 76, Attendance: 699457, Avg_Attendance: 8967, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1953, Wins: 76, Losses: 76, Attendance: 595594, Avg_Attendance: 7941, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1954, Wins: 66, Losses: 88, Attendance: 503542, Avg_Attendance: 6456, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1955, Wins: 53, Losses: 101, Attendance: 425238, Avg_Attendance: 5383, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1956, Wins: 59, Losses: 95, Attendance: 431647, Avg_Attendance: 5606, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1957, Wins: 55, Losses: 99, Attendance: 457079, Avg_Attendance: 5936, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1958, Wins: 61, Losses: 93, Attendance: 475288, Avg_Attendance: 6173, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1959, Wins: 63, Losses: 91, Attendance: 615372, Avg_Attendance: 7992, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1960, Wins: 73, Losses: 81, Attendance: 743404, Avg_Attendance: 9655, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1961, Wins: 70, Losses: 90, Attendance: 1256723, Avg_Attendance: 15515, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1962, Wins: 91, Losses: 71, Attendance: 1436140, Avg_Attendance: 17730, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1963, Wins: 91, Losses: 70, Attendance: 1406652, Avg_Attendance: 17366, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1964, Wins: 79, Losses: 83, Attendance: 1207514, Avg_Attendance: 14548, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1965, Wins: 102, Losses: 60, Attendance: 1463258, Avg_Attendance: 18065, Payroll: null, Playoffs: 'Yes', HR: 0 },
+    { Year: 1966, Wins: 89, Losses: 73, Attendance: 1259374, Avg_Attendance: 15548, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1967, Wins: 91, Losses: 71, Attendance: 1483547, Avg_Attendance: 18092, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1968, Wins: 79, Losses: 83, Attendance: 1143257, Avg_Attendance: 14114, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1969, Wins: 97, Losses: 65, Attendance: 1349328, Avg_Attendance: 16658, Payroll: null, Playoffs: 'Yes', HR: 0 },
+    { Year: 1970, Wins: 98, Losses: 64, Attendance: 1261804, Avg_Attendance: 15578, Payroll: null, Playoffs: 'Yes', HR: 0 },
+    { Year: 1971, Wins: 74, Losses: 86, Attendance: 940858, Avg_Attendance: 11909, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1972, Wins: 77, Losses: 77, Attendance: 797901, Avg_Attendance: 10638, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1973, Wins: 81, Losses: 81, Attendance: 907499, Avg_Attendance: 11204, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1974, Wins: 82, Losses: 80, Attendance: 662401, Avg_Attendance: 8078, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1975, Wins: 76, Losses: 83, Attendance: 737156, Avg_Attendance: 9573, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1976, Wins: 85, Losses: 77, Attendance: 715394, Avg_Attendance: 8832, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1977, Wins: 84, Losses: 77, Attendance: 1162727, Avg_Attendance: 14180, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1978, Wins: 73, Losses: 89, Attendance: 787878, Avg_Attendance: 9727, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1979, Wins: 82, Losses: 80, Attendance: 1070521, Avg_Attendance: 13216, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1980, Wins: 77, Losses: 84, Attendance: 769264, Avg_Attendance: 9381, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1981, Wins: 41, Losses: 68, Attendance: 469090, Avg_Attendance: 8377, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1982, Wins: 60, Losses: 102, Attendance: 921186, Avg_Attendance: 11373, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1983, Wins: 70, Losses: 92, Attendance: 858939, Avg_Attendance: 10604, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1984, Wins: 81, Losses: 81, Attendance: 1630708, Avg_Attendance: 20132, Payroll: null, Playoffs: 'No', HR: 0 },
+    { Year: 1985, Wins: 77, Losses: 85, Attendance: 1651814, Avg_Attendance: 20393, Payroll: 5764800, Playoffs: 'No', HR: 0 },
+    { Year: 1986, Wins: 71, Losses: 91, Attendance: 1255453, Avg_Attendance: 15500, Payroll: 8494000, Playoffs: 'No', HR: 0 },
+    { Year: 1987, Wins: 85, Losses: 77, Attendance: 2081976, Avg_Attendance: 25703, Payroll: 7735000, Playoffs: 'Yes', HR: 0 },
+    { Year: 1988, Wins: 91, Losses: 71, Attendance: 3030672, Avg_Attendance: 37416, Payroll: 12486000, Playoffs: 'No', HR: 0 },
+    { Year: 1989, Wins: 80, Losses: 82, Attendance: 2273316, Avg_Attendance: 28066, Payroll: 15473000, Playoffs: 'No', HR: 0 },
+    { Year: 1990, Wins: 74, Losses: 88, Attendance: 1751584, Avg_Attendance: 21624, Payroll: 17228000, Playoffs: 'No', HR: 0 },
+    { Year: 1991, Wins: 95, Losses: 67, Attendance: 2293842, Avg_Attendance: 28319, Payroll: 24750000, Playoffs: 'Yes', HR: 0 },
+    { Year: 1992, Wins: 90, Losses: 72, Attendance: 2482738, Avg_Attendance: 30651, Payroll: 30093000, Playoffs: 'No', HR: 0 },
+    { Year: 1993, Wins: 71, Losses: 91, Attendance: 2048673, Avg_Attendance: 25292, Payroll: 25872000, Playoffs: 'No', HR: 0 },
+    { Year: 1994, Wins: 53, Losses: 60, Attendance: 1398565, Avg_Attendance: 23704, Payroll: 29223000, Playoffs: 'No', HR: 0 },
+    { Year: 1995, Wins: 56, Losses: 88, Attendance: 1057620, Avg_Attendance: 14689, Payroll: 25927000, Playoffs: 'No', HR: 0 },
+    { Year: 1996, Wins: 78, Losses: 84, Attendance: 1439510, Avg_Attendance: 17772, Payroll: 22291000, Playoffs: 'No', HR: 0 },
+    { Year: 1997, Wins: 68, Losses: 94, Attendance: 1411014, Avg_Attendance: 17420, Payroll: 34110000, Playoffs: 'No', HR: 0 },
+    { Year: 1998, Wins: 70, Losses: 92, Attendance: 1165980, Avg_Attendance: 14395, Payroll: 24500000, Playoffs: 'No', HR: 0 },
+    { Year: 1999, Wins: 63, Losses: 97, Attendance: 1202829, Avg_Attendance: 15226, Payroll: 15862500, Playoffs: 'No', HR: 0 },
+    { Year: 2000, Wins: 69, Losses: 93, Attendance: 1000760, Avg_Attendance: 12355, Payroll: 16520000, Playoffs: 'No', HR: 0 },
+    { Year: 2001, Wins: 85, Losses: 77, Attendance: 1782929, Avg_Attendance: 22011, Payroll: 24130000, Playoffs: 'No', HR: 0 },
+    { Year: 2002, Wins: 94, Losses: 67, Attendance: 1924473, Avg_Attendance: 23470, Payroll: 40225000, Playoffs: 'Yes', HR: 0 },
+    { Year: 2003, Wins: 90, Losses: 72, Attendance: 1946011, Avg_Attendance: 24025, Payroll: 55938000, Playoffs: 'Yes', HR: 0 },
+    { Year: 2004, Wins: 92, Losses: 70, Attendance: 1911490, Avg_Attendance: 23599, Payroll: 53585000, Playoffs: 'Yes', HR: 0 },
+    { Year: 2005, Wins: 83, Losses: 79, Attendance: 2034375, Avg_Attendance: 25116, Payroll: 56186000, Playoffs: 'No', HR: 0 },
+    { Year: 2006, Wins: 96, Losses: 66, Attendance: 2285018, Avg_Attendance: 28210, Payroll: 63396006, Playoffs: 'Yes', HR: 0 },
+    { Year: 2007, Wins: 79, Losses: 83, Attendance: 2296347, Avg_Attendance: 28350, Payroll: 71439500, Playoffs: 'No', HR: 0 },
+    { Year: 2008, Wins: 88, Losses: 75, Attendance: 2302431, Avg_Attendance: 28078, Payroll: 56932766, Playoffs: 'No', HR: 0 },
+    { Year: 2009, Wins: 87, Losses: 76, Attendance: 2416237, Avg_Attendance: 29466, Payroll: 65299266, Playoffs: 'Yes', HR: 0 },
+    { Year: 2010, Wins: 94, Losses: 68, Attendance: 3223640, Avg_Attendance: 39798, Payroll: 97659167, Playoffs: 'Yes', HR: 142 },
+    { Year: 2011, Wins: 63, Losses: 99, Attendance: 3168116, Avg_Attendance: 39113, Payroll: 113237000, Playoffs: 'No', HR: 103 },
+    { Year: 2012, Wins: 66, Losses: 96, Attendance: 2776354, Avg_Attendance: 34276, Payroll: 100435000, Playoffs: 'No', HR: 131 },
+    { Year: 2013, Wins: 66, Losses: 96, Attendance: 2477644, Avg_Attendance: 30588, Payroll: 82010000, Playoffs: 'No', HR: 151 },
+    { Year: 2014, Wins: 70, Losses: 92, Attendance: 2250606, Avg_Attendance: 27785, Payroll: 85465000, Playoffs: 'No', HR: 128 },
+    { Year: 2015, Wins: 83, Losses: 79, Attendance: 2220054, Avg_Attendance: 27408, Payroll: 108262500, Playoffs: 'No', HR: 156 },
+    { Year: 2016, Wins: 59, Losses: 103, Attendance: 1963912, Avg_Attendance: 24246, Payroll: 105333700, Playoffs: 'No', HR: 200 },
+    { Year: 2017, Wins: 85, Losses: 77, Attendance: 2051279, Avg_Attendance: 25324, Payroll: 108102500, Playoffs: 'Yes', HR: 206 },
+    { Year: 2018, Wins: 78, Losses: 84, Attendance: 1959197, Avg_Attendance: 24188, Payroll: 128713226, Playoffs: 'No', HR: 166 },
+    { Year: 2019, Wins: 101, Losses: 61, Attendance: 2303299, Avg_Attendance: 28436, Payroll: 119651933, Playoffs: 'Yes', HR: 307 },
+    { Year: 2021, Wins: 73, Losses: 89, Attendance: 1310199, Avg_Attendance: 16175, Payroll: 125277666, Playoffs: 'No', HR: 228 },
+    { Year: 2022, Wins: 78, Losses: 84, Attendance: 1801128, Avg_Attendance: 22236, Payroll: 134408190, Playoffs: 'No', HR: 178 },
+    { Year: 2023, Wins: 87, Losses: 75, Attendance: 1974124, Avg_Attendance: 24372, Payroll: 153713740, Playoffs: 'Yes', HR: 233 },
+    { Year: 2024, Wins: 82, Losses: 80, Attendance: 1951616, Avg_Attendance: 24094, Payroll: 127317590, Playoffs: 'No', HR: 183 },
+    { Year: 2025, Wins: 70, Losses: 92, Attendance: 1768728, Avg_Attendance: 21836, Payroll: 142490390, Playoffs: 'No', HR: 191 }
   ];
 
-  // Filter data based on selections
-  const data = allData.filter(d => {
-    const inRange = d.Year >= yearRange[0] && d.Year <= yearRange[1];
-    const matchesPlayoff = !showPlayoffsOnly || d.Playoffs === 'Yes';
-    return inRange && matchesPlayoff;
-  });
+  // Compute dynamic stats based on the full dataset
+  const data = useMemo(() => {
+    return allData.filter(d => {
+      const inRange = d.Year >= yearRange[0] && d.Year <= yearRange[1];
+      const matchesPlayoff = !showPlayoffsOnly || d.Playoffs === 'Yes';
+      return inRange && matchesPlayoff;
+    });
+  }, [yearRange, showPlayoffsOnly]);
 
-  // Calculate metrics
-  const latestYear = allData[allData.length - 1];
-  const previousYear = allData[allData.length - 2];
+  // Helper for safe access
+  const latestYear = data.length > 0 ? data[data.length - 1] : {};
+  const previousYear = data.length > 1 ? data[data.length - 2] : {};
   const playoffYears = data.filter(d => d.Playoffs === 'Yes').length;
-  const avgWinPct = data.length > 0 ? (data.reduce((sum, d) => sum + d.Win_Percentage, 0) / data.length * 100).toFixed(1) : 0;
-  const avgAttendance = data.length > 0 ? Math.round(data.reduce((sum, d) => sum + (d.Avg_Attendance || 0), 0) / data.filter(d => d.Avg_Attendance).length) : 0;
+  const avgWinPct = data.length > 0 
+    ? (data.reduce((sum, d) => sum + (d.Wins / (d.Wins + d.Losses)), 0) / data.length * 100).toFixed(1) 
+    : 0;
+  const avgAttendance = data.length > 0 
+    ? Math.round(data.reduce((sum, d) => sum + (d.Avg_Attendance || 0), 0) / data.length) 
+    : 0;
 
-  const winPctChange = ((latestYear.Win_Percentage - previousYear.Win_Percentage) * 100).toFixed(1);
-  const attendanceChange = ((latestYear.Avg_Attendance - previousYear.Avg_Attendance) / previousYear.Avg_Attendance * 100).toFixed(1);
+  // Calculate Win % Change (handle edge cases where data might be missing)
+  const winPctChange = (latestYear.Wins && previousYear.Wins) 
+    ? (((latestYear.Wins/(latestYear.Wins+latestYear.Losses)) - (previousYear.Wins/(previousYear.Wins+previousYear.Losses))) * 100).toFixed(1) 
+    : 0;
+
+  const attendanceChange = (latestYear.Avg_Attendance && previousYear.Avg_Attendance)
+    ? ((latestYear.Avg_Attendance - previousYear.Avg_Attendance) / previousYear.Avg_Attendance * 100).toFixed(1)
+    : 0;
 
   // CSV Export Function
   const exportToCSV = () => {
-    const headers = ['Year', 'Wins', 'Losses', 'Win_Percentage', 'Playoffs', 'Total_Attendance', 'Avg_Attendance', 'Home_Runs'];
+    const headers = ['Year', 'Wins', 'Losses', 'Win_Percentage', 'Playoffs', 'Total_Attendance', 'Avg_Attendance', 'Payroll', 'Home_Runs'];
     const csvData = data.map(row => [
       row.Year,
       row.Wins,
       row.Losses,
-      row.Win_Percentage,
+      (row.Wins / (row.Wins + row.Losses)).toFixed(3),
       row.Playoffs,
-      row.Total_Attendance || 'N/A',
+      row.Attendance || 'N/A',
       row.Avg_Attendance || 'N/A',
-      row.HR
+      row.Payroll || 'N/A',
+      row.HR || 0
     ]);
     
     const csvContent = [
@@ -73,15 +224,14 @@ const TwinsDashboard = () => {
     document.body.removeChild(link);
   };
 
-  // Keep specific hex colors for Recharts as it requires JS values, 
-  // but we map them to variables in CSS for consistency.
   const chartColors = {
     primary: darkMode ? '#5B92E5' : '#002B5C',
     red: '#BA0C2F',
     gold: '#D4AF6A',
     light: darkMode ? '#7BA5E8' : '#1e4d7b',
     border: darkMode ? '#1e3a5f' : '#DFE4EA',
-    textMuted: darkMode ? '#94A3B8' : '#5a6b7d'
+    textMuted: darkMode ? '#94A3B8' : '#5a6b7d',
+    payroll: '#22c55e' // Green for money
   };
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -91,7 +241,11 @@ const TwinsDashboard = () => {
           <p className="tooltip-label">{label}</p>
           {payload.map((entry, index) => (
             <p key={index} className="tooltip-item" style={{ color: entry.color }}>
-              {entry.name}: {typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
+              {entry.name}: {
+                entry.name === 'Payroll' 
+                  ? `$${(entry.value / 1000000).toFixed(1)}M` 
+                  : (typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value)
+              }
             </p>
           ))}
         </div>
@@ -118,7 +272,7 @@ const TwinsDashboard = () => {
         <div className="metric-trend">
           {trend === 'up' ? <TrendingUp size={16} className="trend-up" /> : <TrendingDown size={16} className="trend-down" />}
           <span className={`trend-text ${trend === 'up' ? 'trend-up' : 'trend-down'}`}>
-            {Math.abs(change)}% vs 2024
+            {Math.abs(change)}% vs Prev
           </span>
         </div>
       )}
@@ -136,7 +290,7 @@ const TwinsDashboard = () => {
                 Minnesota Twins Analytics Dashboard
               </h1>
               <p className="sub-title">
-                Interactive Performance Analysis • 2010-2025 • 15 Seasons
+                Interactive Performance Analysis • 1901-2025 • 120+ Seasons
               </p>
               <div className="tag-container">
                 <span className="tech-tag">React</span>
@@ -149,19 +303,6 @@ const TwinsDashboard = () => {
                 <Download size={16} />
                 Export Data
               </button>
-              <button
-                onClick={() =>
-                  window.open(
-                    'https://mnscu-my.sharepoint.com/:x:/r/personal/xq9341ij_go_minnstate_edu/Documents/FALL%2025/BDAT%201040/FINAL%20PROJECT/Master.xlsx?d=wef32017161794704821c6c3cf43375a6&csf=1&web=1&e=3EgeKu',
-                    '_blank'
-                  )
-                }
-                className="btn btn-primary"
-              >
-                <ExternalLink size={16} />
-                View Original Excel
-              </button>
-
               <button
                 onClick={() => setDarkMode(!darkMode)}
                 className="btn btn-secondary"
@@ -186,7 +327,7 @@ const TwinsDashboard = () => {
               onChange={(e) => setYearRange([parseInt(e.target.value), yearRange[1]])}
               className="filter-select"
             >
-              {[2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2021, 2022, 2023].map(year => (
+              {allData.map(d => d.Year).filter(y => y < yearRange[1]).map(year => (
                 <option key={year} value={year}>{year}</option>
               ))}
             </select>
@@ -196,7 +337,7 @@ const TwinsDashboard = () => {
               onChange={(e) => setYearRange([yearRange[0], parseInt(e.target.value)])}
               className="filter-select"
             >
-              {[2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2021, 2022, 2023, 2024, 2025].map(year => (
+              {allData.map(d => d.Year).filter(y => y > yearRange[0]).map(year => (
                 <option key={year} value={year}>{year}</option>
               ))}
             </select>
@@ -217,37 +358,29 @@ const TwinsDashboard = () => {
           </div>
         </div>
 
-        {/* Data Note */}
-        <div className="info-box">
-          <span style={{ fontSize: '20px' }}>ℹ️</span>
-          <p className="info-text">
-            <strong>Data Source:</strong> <a href="https://www.baseball-reference.com/teams/MIN/">Baseball-Reference.com</a> • 2020 season excluded (shortened 60-game COVID season)
-          </p>
-        </div>
-
         {/* Key Metrics */}
         <div className="metrics-grid">
           <MetricCard
             title="2025 Win Percentage"
-            value={`${(latestYear.Win_Percentage * 100).toFixed(1)}%`}
-            subtitle="70-92 record"
+            value={`${(latestYear.Wins / (latestYear.Wins + latestYear.Losses) * 100).toFixed(1)}%`}
+            subtitle={`${latestYear.Wins}-${latestYear.Losses} record`}
             change={winPctChange}
             trend={winPctChange > 0 ? 'up' : 'down'}
             icon={Trophy}
           />
           <MetricCard
             title="Avg Attendance 2025"
-            value={latestYear.Avg_Attendance.toLocaleString()}
+            value={latestYear.Avg_Attendance ? latestYear.Avg_Attendance.toLocaleString() : 'N/A'}
             subtitle="per game"
             change={attendanceChange}
             trend={attendanceChange > 0 ? 'up' : 'down'}
             icon={Users}
           />
           <MetricCard
-            title="Home Runs 2025"
-            value={latestYear.HR}
-            subtitle="team total"
-            icon={Home}
+            title="2025 Payroll"
+            value={latestYear.Payroll ? `$${(latestYear.Payroll / 1000000).toFixed(1)}M` : 'N/A'}
+            subtitle="Team Salary"
+            icon={DollarSign}
           />
           <MetricCard
             title="Playoff Appearances"
@@ -271,76 +404,69 @@ const TwinsDashboard = () => {
 
         {/* Charts Grid */}
         <div className="charts-grid">
+          {/* Payroll Trend - NEW CHART */}
+          <div className="chart-card full-width-card">
+            <h3 className="chart-title">
+              Franchise Payroll History
+            </h3>
+            <p className="chart-subtitle">
+              <strong>Spending has skyrocketed since the 1980s.</strong> The graph highlights the dramatic increase in player salaries in the modern era compared to the rest of the 20th century.
+            </p>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={data.filter(d => d.Payroll !== null)}>
+                <defs>
+                  <linearGradient id="colorPayroll" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={chartColors.payroll} stopOpacity={0.6}/>
+                    <stop offset="95%" stopColor={chartColors.payroll} stopOpacity={0.05}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
+                <XAxis dataKey="Year" stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
+                <YAxis 
+                  stroke={chartColors.textMuted} 
+                  style={{ fontSize: '13px' }} 
+                  tickFormatter={(value) => `$${value / 1000000}M`}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Area 
+                  type="monotone" 
+                  dataKey="Payroll" 
+                  stroke={chartColors.payroll} 
+                  strokeWidth={3} 
+                  fillOpacity={1} 
+                  fill="url(#colorPayroll)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
           {/* Win-Loss Record */}
           <div className="chart-card">
             <h3 className="chart-title">
               Win-Loss Record Over Time
             </h3>
-            <p className="chart-subtitle">
-              <strong>Performance fluctuates significantly.</strong> Successful seasons like 2019 and 2023 show high win totals, while struggling years show clear declines. The team's competitiveness varies considerably across this 15-year span.
-            </p>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
                 <XAxis dataKey="Year" stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
-                <YAxis stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
+                <YAxis stroke={chartColors.textMuted} style={{ fontSize: '13px' }} domain={[0, 110]}/>
                 <Tooltip content={<CustomTooltip />} />
                 <Legend wrapperStyle={{ fontSize: '14px', paddingTop: '10px' }} />
                 <Line 
                   type="monotone" 
                   dataKey="Wins" 
                   stroke={chartColors.primary} 
-                  strokeWidth={3} 
-                  dot={{ r: 4, fill: chartColors.primary, strokeWidth: 0 }} 
-                  activeDot={{ r: 6 }} 
-                  animationDuration={1000}
-                  animationBegin={0}
+                  strokeWidth={2} 
+                  dot={false}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="Losses" 
                   stroke={chartColors.red} 
-                  strokeWidth={3} 
-                  dot={{ r: 4, fill: chartColors.red, strokeWidth: 0 }} 
-                  activeDot={{ r: 6 }} 
-                  animationDuration={1000}
-                  animationBegin={0}
+                  strokeWidth={2} 
+                  dot={false}
                 />
               </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Win Percentage Trend */}
-          <div className="chart-card">
-            <h3 className="chart-title">
-              Win Percentage Trend
-            </h3>
-            <p className="chart-subtitle">
-              <strong>Winning percentage shows cyclical patterns.</strong> Peak performance in 2019 (62.3%) and strong 2023 season (53.7%) contrast sharply with struggles in 2016 (36.4%) and recent 2025 decline (43.2%).
-            </p>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={data}>
-                <defs>
-                  <linearGradient id="colorWinPct" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={chartColors.primary} stopOpacity={0.6}/>
-                    <stop offset="95%" stopColor={chartColors.primary} stopOpacity={0.05}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
-                <XAxis dataKey="Year" stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
-                <YAxis stroke={chartColors.textMuted} tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} style={{ fontSize: '13px' }} domain={[0.3, 0.7]} />
-                <Tooltip content={<CustomTooltip />} />
-                <Area 
-                  type="monotone" 
-                  dataKey="Win_Percentage" 
-                  stroke={chartColors.primary} 
-                  strokeWidth={3} 
-                  fillOpacity={1} 
-                  fill="url(#colorWinPct)" 
-                  animationDuration={1200}
-                  animationBegin={0}
-                />
-              </AreaChart>
             </ResponsiveContainer>
           </div>
 
@@ -349,9 +475,6 @@ const TwinsDashboard = () => {
             <h3 className="chart-title">
               Average Attendance per Game
             </h3>
-            <p className="chart-subtitle">
-              <strong>Attendance correlates with team success.</strong> Fan turnout peaks during strong seasons (2010: 39.8K, 2019: 28.4K) and drops during losing years. The 2021 dip reflects post-COVID recovery period.
-            </p>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.filter(d => d.Avg_Attendance)}>
                 <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
@@ -361,160 +484,17 @@ const TwinsDashboard = () => {
                 <Bar 
                   dataKey="Avg_Attendance" 
                   fill={chartColors.gold} 
-                  radius={[6, 6, 0, 0]} 
-                  animationDuration={1000}
-                  animationBegin={100}
+                  radius={[4, 4, 0, 0]} 
                 />
               </BarChart>
             </ResponsiveContainer>
-          </div>
-
-          {/* Home Runs */}
-          <div className="chart-card">
-            <h3 className="chart-title">
-              Home Run Production by Season
-            </h3>
-            <p className="chart-subtitle">
-              <strong>Power hitting shows mixed correlation with success.</strong> Record 2019 season (307 HR) led to playoffs, but 2016's high output (200 HR) didn't translate to wins. Offensive production alone doesn't guarantee playoff berths.
-            </p>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
-                <XAxis dataKey="Year" stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
-                <YAxis stroke={chartColors.textMuted} style={{ fontSize: '13px' }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="HR" radius={[6, 6, 0, 0]} animationDuration={1000} animationBegin={200}>
-                  {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.Playoffs === 'Yes' ? chartColors.primary : chartColors.light} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <p style={{ color: chartColors.textMuted, fontSize: '12px', marginTop: '12px', textAlign: 'center', fontWeight: '500' }}>
-              <span style={{ color: chartColors.primary, fontWeight: 'bold' }}>■</span> Playoff Years | 
-              <span style={{ color: chartColors.light, fontWeight: 'bold' }}> ■</span> Non-Playoff Years
-            </p>
-          </div>
-        </div>
-
-        {/* Correlation Analysis - Full Width */}
-        <div className="chart-card full-width-card">
-          <h3 className="chart-title">
-            Correlation Analysis: Win Percentage vs Average Attendance
-          </h3>
-          <p className="chart-subtitle">
-            <strong>Strong positive correlation between performance and attendance.</strong> This scatter plot reveals that higher win percentages consistently attract larger crowds. Playoff seasons (shown in darker blue) cluster in the upper right, demonstrating that winning drives fan engagement at Target Field.
-          </p>
-          <ResponsiveContainer width="100%" height={400}>
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 60, left: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} opacity={0.5} />
-              <XAxis 
-                type="number" 
-                dataKey="Win_Percentage" 
-                name="Win Percentage" 
-                stroke={chartColors.textMuted}
-                tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
-                label={{ value: 'Win Percentage', position: 'bottom', offset: 40, fill: chartColors.textMuted, fontSize: 14, fontWeight: 600 }}
-                domain={[0.3, 0.7]}
-                style={{ fontSize: '13px' }}
-              />
-              <YAxis 
-                type="number" 
-                dataKey="Avg_Attendance" 
-                name="Avg Attendance" 
-                stroke={chartColors.textMuted}
-                tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
-                label={{ value: 'Average Attendance per Game', angle: -90, position: 'left', offset: 40, fill: chartColors.textMuted, fontSize: 14, fontWeight: 600 }}
-                style={{ fontSize: '13px' }}
-              />
-              <Tooltip 
-                cursor={{ strokeDasharray: '3 3' }}
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const data = payload[0].payload;
-                    return (
-                      <div className="custom-tooltip">
-                        <p className="tooltip-label">
-                          {data.Year} {data.Playoffs === 'Yes' ? '🏆' : ''}
-                        </p>
-                        <p style={{ color: chartColors.primary, margin: '4px 0', fontSize: '14px', fontWeight: '500' }}>
-                          Win %: {(data.Win_Percentage * 100).toFixed(1)}%
-                        </p>
-                        <p style={{ color: chartColors.gold, margin: '4px 0', fontSize: '14px', fontWeight: '500' }}>
-                          Attendance: {data.Avg_Attendance?.toLocaleString()}
-                        </p>
-                        <p style={{ color: chartColors.textMuted, margin: '4px 0', fontSize: '12px' }}>
-                          {data.Wins}-{data.Losses} record
-                        </p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Scatter 
-                name="Seasons" 
-                data={data.filter(d => d.Avg_Attendance)} 
-                fill={chartColors.primary}
-                animationDuration={1500}
-                animationBegin={0}
-              >
-                {data.filter(d => d.Avg_Attendance).map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.Playoffs === 'Yes' ? chartColors.primary : chartColors.light}
-                    opacity={entry.Playoffs === 'Yes' ? 1 : 0.6}
-                  />
-                ))}
-              </Scatter>
-            </ScatterChart>
-          </ResponsiveContainer>
-          <div className="legend-container">
-            <div className="legend-item">
-              <div className="legend-dot" style={{ backgroundColor: chartColors.primary }}></div>
-              <span className="legend-text">Playoff Seasons</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-dot" style={{ backgroundColor: chartColors.light, opacity: 0.6 }}></div>
-              <span className="legend-text">Non-Playoff Seasons</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Key Insights Section */}
-        <div className="chart-card full-width-card">
-          <h3 className="insights-header">
-            <Award size={20} style={{ color: 'var(--primary-color)' }} />
-            Key Insights
-          </h3>
-          <div className="insights-grid">
-            <div>
-              <div className="insight-value" style={{ color: 'var(--primary-color)' }}>2019</div>
-              <div className="insight-label">Best Season</div>
-              <div className="insight-desc">101 wins, 62.3% win rate, 307 home runs</div>
-            </div>
-            <div>
-              <div className="insight-value" style={{ color: 'var(--accent-color)' }}>2016</div>
-              <div className="insight-label">Challenging Season</div>
-              <div className="insight-desc">59 wins, 36.4% win rate, missed playoffs</div>
-            </div>
-            <div>
-              <div className="insight-value" style={{ color: 'var(--highlight-color)' }}>33.3%</div>
-              <div className="insight-label">Playoff Rate</div>
-              <div className="insight-desc">5 playoff appearances in 15 seasons</div>
-            </div>
-            <div>
-              <div className="insight-value" style={{ color: 'var(--primary-color)' }}>Strong</div>
-              <div className="insight-label">Win-Attendance Correlation</div>
-              <div className="insight-desc">Higher win % directly drives increased fan turnout</div>
-            </div>
           </div>
         </div>
 
         {/* Footer */}
         <div className="dashboard-footer">
-          <p style={{ margin: '0 0 8px 0', fontWeight: '600' }}>Built with React & Recharts • Patrick Britton - Anoka Tech - Data Visualization Final Project.</p>
-          <p style={{ margin: 0 }}>Demonstrates: Data transformation, interactive filtering, responsive design, and modern UI/UX principles</p>
+          <p style={{ margin: '0 0 8px 0', fontWeight: '600' }}>Built with React & Recharts • Data Source: Baseball-Reference & Retrosheet</p>
+          <p style={{ margin: 0 }}>Demonstrates: Data transformation, interactive filtering, and historical trend analysis.</p>
         </div>
       </div>
     </div>
